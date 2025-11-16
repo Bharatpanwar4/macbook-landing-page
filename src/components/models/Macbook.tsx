@@ -7,13 +7,31 @@ License: CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
 Source: https://sketchfab.com/3d-models/macbook-pro-m3-16-inch-2024-8e34fc2b303144f78490007d91ff57c4
 Title: macbook pro M3 16 inch 2024
 */
+// @ts-nocheck
 
-import { useGLTF, useTexture } from "@react-three/drei";
+import { useGLTF, useVideoTexture } from "@react-three/drei";
+import useMacbookStore from "../../store";
+import { useEffect } from "react";
+import { noChangeParts } from "../../constants";
+import { Color } from "three";
 
-export default function MacbookModel(props) {
-  const { nodes, materials } = useGLTF("/models/macbook-transformed.glb");
-  const texture = useTexture("/screen.png");
+export default function MacbookModel(props: any) {
+  const { color, texture }: any = useMacbookStore();
+  const { nodes, materials, scene } = useGLTF(
+    "/models/macbook-transformed.glb"
+  );
 
+  const screen = useVideoTexture(texture);
+
+  useEffect(() => {
+    scene.traverse((child: any) => {
+      if (child.isMesh) {
+        if (!noChangeParts.includes(child.name)) {
+          child.material.color = new Color(color);
+        }
+      }
+    });
+  }, [color, scene]);
   return (
     <group {...props} dispose={null}>
       <mesh
@@ -105,7 +123,9 @@ export default function MacbookModel(props) {
         geometry={nodes.Object_123.geometry}
         material={materials.sfCQkHOWyrsLmor}
         rotation={[Math.PI / 2, 0, 0]}
-      />
+      >
+        <meshBasicMaterial map={screen} />
+      </mesh>
 
       <mesh
         geometry={nodes.Object_127.geometry}
